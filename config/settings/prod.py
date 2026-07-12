@@ -6,8 +6,8 @@ from .base import BASE_DIR, config
 DEBUG = False
 
 DATABASES = {
-    "default": dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+    "default": dj_database_url.parse(
+        config("DATABASE_URL", default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
         conn_max_age=600,
         ssl_require=config("DB_SSL_REQUIRE", default=True, cast=bool),
     )
