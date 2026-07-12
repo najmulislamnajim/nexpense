@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}Expenses — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold text-slate-900">Expenses</h1>
+    <a href="{% url 'expenses:create' %}" class="btn-primary">+ Add expense</a>
+</div>
+
+<div class="card p-4 mb-6">
+    <form method="get" class="flex flex-wrap items-end gap-4">
+        <div>
+            <label class="block text-xs font-medium text-slate-500 mb-1">From</label>
+            {{ filter_form.start_date }}
+        </div>
+        <div>
+            <label class="block text-xs font-medium text-slate-500 mb-1">To</label>
+            {{ filter_form.end_date }}
+        </div>
+        <div class="min-w-[10rem]">
+            <label class="block text-xs font-medium text-slate-500 mb-1">Category</label>
+            {{ filter_form.category }}
+        </div>
+        <button type="submit" class="btn-secondary">Filter</button>
+        {% if request.GET %}<a href="{% url 'expenses:list' %}" class="text-sm text-slate-500 hover:underline">Clear</a>{% endif %}
+    </form>
+</div>
+
+<div class="card overflow-hidden">
+    <div class="px-5 py-3 border-b border-slate-100 flex justify-between text-sm">
+        <span class="text-slate-500">{{ page_obj.paginator.count }} expense{{ page_obj.paginator.count|pluralize }}</span>
+        <span class="font-semibold text-slate-900">Total: {{ user.currency }} {{ total|floatformat:2|intcomma }}</span>
+    </div>
+    {% if expenses %}
+    <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-slate-500 text-left">
+            <tr>
+                <th class="px-5 py-2.5 font-medium">Date</th>
+                <th class="px-5 py-2.5 font-medium">Category</th>
+                <th class="px-5 py-2.5 font-medium">Note</th>
+                <th class="px-5 py-2.5 font-medium">Payment</th>
+                <th class="px-5 py-2.5 font-medium text-right">Amount</th>
+                <th class="px-5 py-2.5 font-medium text-right">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+            {% for expense in expenses %}
+            <tr class="hover:bg-slate-50">
+                <td class="px-5 py-3 text-slate-600">{{ expense.date }}</td>
+                <td class="px-5 py-3"><span class="badge">{{ expense.category.icon }} {{ expense.category.name }}</span></td>
+                <td class="px-5 py-3 text-slate-500">{{ expense.note|default:"—" }}</td>
+                <td class="px-5 py-3 text-slate-500">{{ expense.get_payment_method_display }}</td>
+                <td class="px-5 py-3 text-right font-medium text-slate-900">{{ user.currency }} {{ expense.amount|floatformat:2|intcomma }}</td>
+                <td class="px-5 py-3 text-right space-x-3">
+                    <a href="{% url 'expenses:update' expense.pk %}" class="text-emerald-600 hover:underline">Edit</a>
+                    <a href="{% url 'expenses:delete' expense.pk %}" class="text-red-500 hover:underline">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p class="text-sm text-slate-400 px-5 py-8 text-center">No expenses found. <a href="{% url 'expenses:create' %}" class="text-emerald-600 hover:underline">Add one</a>.</p>
+    {% endif %}
+</div>
+
+{% if is_paginated %}
+<div class="flex justify-center gap-2 mt-6">
+    {% if page_obj.has_previous %}
+        <a href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}" class="btn-secondary !py-1.5 !px-3 text-sm">Previous</a>
+    {% endif %}
+    <span class="flex items-center px-3 text-sm text-slate-500">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+        <a href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}" class="btn-secondary !py-1.5 !px-3 text-sm">Next</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}Dashboard — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+
+<div class="flex items-center justify-between mb-6">
+    <div>
+        <h1 class="text-2xl font-bold text-slate-900">Welcome back{% if user.get_short_name %}, {{ user.get_short_name }}{% endif %}</h1>
+        <p class="text-sm text-slate-500">Here's your spending snapshot for {{ month_label }}.</p>
+    </div>
+    <a href="{% url 'expenses:create' %}" class="btn-primary hidden sm:inline-flex">+ Add expense</a>
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+    <div class="card p-5">
+        <p class="text-sm text-slate-500">This month</p>
+        <p class="text-3xl font-bold text-slate-900 mt-1">{{ user.currency }} {{ month_total|floatformat:2|intcomma }}</p>
+    </div>
+    <div class="card p-5">
+        <p class="text-sm text-slate-500">Today</p>
+        <p class="text-3xl font-bold text-slate-900 mt-1">{{ user.currency }} {{ today_total|floatformat:2|intcomma }}</p>
+    </div>
+    <div class="card p-5 flex flex-col justify-between">
+        <p class="text-sm text-slate-500">Quick links</p>
+        <div class="flex gap-2 mt-2">
+            <a href="{% url 'reports:report' %}" class="btn-secondary text-sm !py-2">View reports</a>
+            <a href="{% url 'expenses:category_list' %}" class="btn-secondary text-sm !py-2">Categories</a>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+    <div class="card p-6 lg:col-span-2">
+        <h2 class="font-semibold text-slate-900 mb-4">Spending by category</h2>
+        {% if by_category %}
+            <div class="space-y-3">
+                {% for row in by_category %}
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-slate-600">{{ row.category__icon }} {{ row.category__name }}</span>
+                        <span class="font-medium text-slate-900">{{ user.currency }} {{ row.total|floatformat:2|intcomma }}</span>
+                    </div>
+                    <div class="h-2 rounded-full bg-slate-100 overflow-hidden">
+                        <div class="h-full bg-emerald-500 rounded-full"
+                             style="width: {% widthratio row.total max_category_total 100 %}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-sm text-slate-400">No expenses recorded this month yet.</p>
+        {% endif %}
+    </div>
+
+    <div class="card p-6 lg:col-span-3">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="font-semibold text-slate-900">Recent expenses</h2>
+            <a href="{% url 'expenses:list' %}" class="text-sm text-emerald-600 hover:underline">View all</a>
+        </div>
+        {% if recent %}
+            <div class="divide-y divide-slate-100">
+                {% for expense in recent %}
+                <div class="flex items-center justify-between py-3">
+                    <div class="flex items-center gap-3">
+                        <span class="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-base">{{ expense.category.icon }}</span>
+                        <div>
+                            <p class="text-sm font-medium text-slate-900">{{ expense.category.name }}</p>
+                            <p class="text-xs text-slate-400">{{ expense.date }}{% if expense.note %} &middot; {{ expense.note }}{% endif %}</p>
+                        </div>
+                    </div>
+                    <p class="text-sm font-semibold text-slate-900">{{ user.currency }} {{ expense.amount|floatformat:2|intcomma }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-sm text-slate-400">No expenses yet. <a href="{% url 'expenses:create' %}" class="text-emerald-600 hover:underline">Add your first one</a>.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

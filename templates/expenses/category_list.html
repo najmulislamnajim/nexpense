@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Categories — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold text-slate-900">Categories</h1>
+    <a href="{% url 'expenses:category_create' %}" class="btn-primary">+ New category</a>
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for category in categories %}
+    <div class="card p-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <span class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-lg">{{ category.icon }}</span>
+            <div>
+                <p class="text-sm font-medium text-slate-900">{{ category.name }}</p>
+                <p class="text-xs text-slate-400">{% if category.owner %}Custom{% else %}Default{% endif %}</p>
+            </div>
+        </div>
+        {% if category.owner %}
+        <a href="{% url 'expenses:category_delete' category.pk %}" class="text-red-500 text-sm hover:underline">Delete</a>
+        {% endif %}
+    </div>
+    {% empty %}
+    <p class="text-sm text-slate-400">No categories yet.</p>
+    {% endfor %}
+</div>
+{% endblock %}
